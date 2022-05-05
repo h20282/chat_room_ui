@@ -1,0 +1,74 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>多人在线语言聊天室</title>
+</head>
+
+<body>
+    <div>
+        <input id="username" type="text" />
+        <input id="password" type="text" />
+        <input id="login" type="button" onclick="login()" value="登录" />
+    </div>
+
+    <script>
+        const Request = {
+            kRegist: "request.regist",
+            kLogin: "reqest.login",
+            kCreateRoom: "request.createRoom",
+            kLeaveRoom: "request.leaveRoom",
+            kJoinRoom: "request.joinRoom",
+            kGetRoomList: "request.getRoomList",
+            kChangeOwner: "request.changeOwner",
+            kKickUser: "request.kickUser",
+            kMute: "request.mute",
+        }
+
+        const Reply = {
+            kRegist: "reply.regist",
+            kLogin: "reply.login",
+            kCreateRoom: "reply.createRoom",
+            kLeaveRoom: "reply.leaveRoom",
+            kJoinRoom: "reply.joinRoom",
+            kGetRoomList: "reply.getRoomList",
+            kChangeOwner: "reply.changeOwner",
+            kKickUser: "reply.kickUser",
+            kMute: "reply.mute",
+        }
+
+        const Boardcast = {
+            kCreateRoom: "boardcast.createRoom",
+            kLeaveRoom: "boardcast.leaveRoom",
+            kJoinRoom: "boardcast.joinRoom",
+            kChangeOwner: "boardcast.changeOwner",
+            kKickUser: "boardcast.kickUser",
+            kMute: "boardcast.mute",
+        }
+
+        const url = "ws://127.0.0.1:9001";
+        var websocket = new WebSocket(url);
+
+        websocket.onopen = () => {
+            console.log("open");
+        }
+
+        websocket.onmessage = () => {
+
+        }
+
+        function login() {
+            var username = document.getElementById("username").value;
+            var password = document.getElementById("password").value;
+            const req = {
+                type: Request.kLogin,
+                userName: username,
+                password: password
+            }
+            websocket.send(JSON.stringify(req));
+        }
+    </script>
+
+</body>
+
+</html>
