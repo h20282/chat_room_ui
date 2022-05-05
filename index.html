@@ -15,7 +15,7 @@
     <script>
         const Request = {
             kRegist: "request.regist",
-            kLogin: "reqest.login",
+            kLogin: "request.login",
             kCreateRoom: "request.createRoom",
             kLeaveRoom: "request.leaveRoom",
             kJoinRoom: "request.joinRoom",
@@ -53,8 +53,8 @@
             console.log("open");
         }
 
-        websocket.onmessage = () => {
-
+        websocket.onmessage = (evt) => {
+            console.log(evt);
         }
 
         function login() {
