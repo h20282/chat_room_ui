@@ -6,7 +6,7 @@
 </head>
 
 <body>
-    <div>
+    <div id="login box">
         <input id="username" type="text" />
         <input id="password" type="text" />
         <input id="login" type="button" onclick="login()" value="登录" />
@@ -55,6 +55,11 @@
 
         websocket.onmessage = (evt) => {
             console.log(evt);
+
+            const msg = JSON.parse(evt.data);
+            if (msg.type == Reply.kLogin) {
+                on_login(msg);
+            }
         }
 
         function login() {
@@ -66,6 +71,14 @@
                 password: password
             }
             websocket.send(JSON.stringify(req));
+        }
+
+        function on_login(msg) {
+            if (msg.result) {
+                document.getElementById("login box").hidden = true;
+            } else {
+                console.log(msg.msg);
+            }
         }
     </script>
 
