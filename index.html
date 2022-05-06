@@ -1,16 +1,35 @@
 <html>
 
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
 <head>
     <meta charset="UTF-8">
     <title>多人在线语言聊天室</title>
 </head>
 
 <body>
-    <div id="login box">
+    <div id="login_view">
         <input id="username" type="text" />
         <input id="password" type="text" />
         <input id="login" type="button" onclick="login()" value="登录" />
     </div>
+
+    <div id="regist_view">
+
+    </div>
+
+    <div id="main_view">
+        <ul>
+            <li v-for="room in rooms">
+                <div>{{room.roomId}}</div>
+                <div>{{room.userNum}}</div>
+                <div></div>
+                <button v-bind:onclick="'join_room('+room.roomId+')'">加入</button>
+            </li>
+        </ul>
+    </div>
+
+    <div id="room_view"></div>
 
     <script>
         const Request = {
@@ -46,6 +65,35 @@
             kMute: "boardcast.mute",
         }
 
+        const View = {
+            kLogin: "login_view",
+            kRegister: "regist_view",
+            kMain: "main_view",
+            kRoom: "room_view",
+        }
+
+        function set_showing_view(view) {
+
+            for (var key in View) {
+                el = document.getElementById(View[key]);
+                el.hidden = true;
+            }
+            el = document.getElementById(view);
+            el.hidden = false;
+        }
+
+        set_showing_view(View.kLogin);
+
+        var app = new Vue({
+            el: '#main_view',
+            data: {
+                rooms: [
+                    {roomId: 123456, userNum: 4, ownerId: "ys"},
+                    {roomId: 456789, userNum: 3, ownerId: "gzh"}
+                ]
+            }
+        })
+
         const url = "ws://127.0.0.1:9001";
         var websocket = new WebSocket(url);
 
@@ -53,14 +101,36 @@
             console.log("open");
         }
 
+        const handlers = new Map([
+            [Reply.kRegist, on_regist],
+            [Reply.kLogin, on_login],
+            [Reply.kCreateRoom, on_create_room],
+            [Reply.kLeaveRoom, on_leave_room],
+            [Reply.kJoinRoom, on_join_room],
+            [Reply.kGetRoomList, on_get_room_list],
+            [Reply.kChangeOwner, on_change_owner],
+            [Reply.kKickUser, on_kick_user],
+            [Reply.kMute, on_mute],
+        ]);
+
         websocket.onmessage = (evt) => {
             console.log(evt);
 
+            alert(evt.data);
             const msg = JSON.parse(evt.data);
-            if (msg.type == Reply.kLogin) {
-                on_login(msg);
-            }
+
+            handlers.get(msg.type)(msg);
         }
+
+        function on_regist() { }
+        function on_login() { }
+        function on_create_room() { }
+        function on_leave_room() { }
+        function on_join_room() { }
+        function on_get_room_list() { }
+        function on_change_owner() { }
+        function on_kick_user() { }
+        function on_mute() { }
 
         function login() {
             var username = document.getElementById("username").value;
@@ -75,10 +145,37 @@
 
         function on_login(msg) {
             if (msg.result) {
-                document.getElementById("login box").hidden = true;
+                set_showing_view(View.kMain);
             } else {
                 console.log(msg.msg);
             }
+            get_room_list();
+        }
+
+        function join_room(room_id) {
+            alert(room_id);
+            const req = {
+                type: Request.kJoinRoom,
+                roomId: room_id,
+            }
+            websocket.send(JSON.stringify(req));
+        }
+
+        function on_join_room(msg) {
+            if (msg.result) {
+
+            }
+        }
+
+        function get_room_list() {
+            const req = {
+                type: Request.kGetRoomList
+            }
+            websocket.send(JSON.stringify(req));
+        }
+
+        function on_get_room_list(msg) {
+            app.rooms = msg.rooms;
         }
     </script>
 
