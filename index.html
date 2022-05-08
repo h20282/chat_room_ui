@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>多人在线语言聊天室</title>
+    <link rel="stylesheet" href="stype.css">
 </head>
 
 <body>
@@ -22,11 +23,12 @@
         <button onclick="create_room()">创建房间</button>
         <ul>
             <li v-for="room in rooms">
-                <div>房间号：{{room.roomId}}</div>
-                <div>人数：{{room.userNum}}</div>
-                <div>房主：{{room.ownerId}}</div>
-                <div></div>
-                <button v-bind:onclick="'join_room('+room.roomId+')'">加入</button>
+                <div class="room-item">
+                    <div class="room_id">房间号：{{room.roomId}}</div>
+                    <div>人数：{{room.userNum}}</div>
+                    <div>房主：{{room.ownerId}}</div>
+                    <button v-bind:onclick="'join_room('+room.roomId+')'">加入</button>
+                </div>
             </li>
         </ul>
     </div>
@@ -96,8 +98,8 @@
             el: '#main_view',
             data: {
                 rooms: [
-                    //{roomId: 123456, userNum: 4, ownerId: "ys"},
-                    //{roomId: 456789, userNum: 3, ownerId: "gzh"}
+                    {roomId: 123456, userNum: 4, ownerId: "ys"},
+                    {roomId: 456789, userNum: 3, ownerId: "gzh"}
                 ]
             }
         })
