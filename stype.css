@@ -1,8 +1,10 @@
-ul{
+/* 房间列表 */
+#main_view>ul {
     padding: 0;
 }
 
-li{
+/* 房间列表项 */
+#main_view>ul>li {
     border: 1px solid red;
     list-style: none;
     margin: 10px;
@@ -11,36 +13,27 @@ li{
     border-radius: 15px;
 }
 
-#main_view{
+/* 主界面 */
+#main_view {
     border: 1px solid red;
     border-radius: 15px;
     margin: 50px;
     padding: 10px;
 }
 
-#main_view > button{
+/* 创建房间按钮 */
+#main_view>button {
     border-radius: 15px;
+    margin: 10px 40%;
     padding: 10px;
     border: 1px solid red;
     width: 20%;
-    margin: auto 40%;
 }
 
-#main_view > ul > li{
-    /* margin: 0 auto; */
-}
-
-#main_view > ul > li > div{
-    /* background-color: rebeccapurple; */
-    margin: auto;
-}
-
-#main_view > ul > li > div > div{
+/* 列表项中的每一列（不包括“加入”按钮） */
+#main_view>ul>li>div>div {
     margin: auto 5px;
     white-space: nowrap;
     float: left;
-}
-
-#main_view > ul > li > div > div{
     width: 25%;
 }
