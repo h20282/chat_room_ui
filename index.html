@@ -19,17 +19,20 @@
     </div>
 
     <div id="main_view">
+        <button onclick="create_room()">创建房间</button>
         <ul>
             <li v-for="room in rooms">
-                <div>{{room.roomId}}</div>
-                <div>{{room.userNum}}</div>
+                <div>房间号：{{room.roomId}}</div>
+                <div>人数：{{room.userNum}}</div>
+                <div>房主：{{room.ownerId}}</div>
                 <div></div>
                 <button v-bind:onclick="'join_room('+room.roomId+')'">加入</button>
             </li>
         </ul>
     </div>
 
-    <div id="room_view"></div>
+    <div id="room_view">
+    </div>
 
     <script>
         const Request = {
@@ -72,11 +75,16 @@
             kRoom: "room_view",
         }
 
+        global_values = {
+            g_username: null,
+            g_roomId: null
+        }
+
         function set_showing_view(view) {
 
             for (var key in View) {
                 el = document.getElementById(View[key]);
-                el.hidden = true;
+                //el.hidden = true;
             }
             el = document.getElementById(view);
             el.hidden = false;
@@ -88,8 +96,8 @@
             el: '#main_view',
             data: {
                 rooms: [
-                    {roomId: 123456, userNum: 4, ownerId: "ys"},
-                    {roomId: 456789, userNum: 3, ownerId: "gzh"}
+                    //{roomId: 123456, userNum: 4, ownerId: "ys"},
+                    //{roomId: 456789, userNum: 3, ownerId: "gzh"}
                 ]
             }
         })
@@ -111,36 +119,51 @@
             [Reply.kChangeOwner, on_change_owner],
             [Reply.kKickUser, on_kick_user],
             [Reply.kMute, on_mute],
+
+            [Boardcast.kCreateRoom, on_create_room_boardcast],
+            [Boardcast.kLeaveRoom, on_leave_room_boardcast],
+            [Boardcast.kJoinRoom, on_join_room_boardcast],
+            [Boardcast.kChangeOwner, on_change_owner_boardcast],
+            [Boardcast.kKickUser, on_kick_user_boardcast],
+            [Boardcast.kMute, on_mute_boardcast],
         ]);
 
         websocket.onmessage = (evt) => {
             console.log(evt);
 
-            alert(evt.data);
             const msg = JSON.parse(evt.data);
 
             handlers.get(msg.type)(msg);
         }
 
-        function on_regist() { }
-        function on_login() { }
-        function on_create_room() { }
-        function on_leave_room() { }
-        function on_join_room() { }
-        function on_get_room_list() { }
-        function on_change_owner() { }
-        function on_kick_user() { }
-        function on_mute() { }
+        function on_regist(msg) { }
+        function on_login(msg) { }
+        function on_create_room(msg) { }
+        function on_leave_room(msg) { }
+        function on_join_room(msg) { }
+        function on_get_room_list(msg) { }
+        function on_change_owner(msg) { }
+        function on_kick_user(msg) { }
+        function on_mute(msg) { }
+
+        function on_create_room_boardcast(msg) { }
+        function on_leave_room_boardcast(msg) { }
+        function on_join_room_boardcast(msg) { }
+        function on_change_owner_boardcast(msg) { }
+        function on_kick_user_boardcast(msg) { }
+        function on_mute_boardcast(msg) { }
 
         function login() {
             var username = document.getElementById("username").value;
             var password = document.getElementById("password").value;
+            global_values.g_username = username;
             const req = {
                 type: Request.kLogin,
                 userName: username,
                 password: password
             }
             websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
         }
 
         function on_login(msg) {
@@ -159,6 +182,9 @@
                 roomId: room_id,
             }
             websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
+            global_values.g_roomId = room_id;
+
         }
 
         function on_join_room(msg) {
@@ -172,11 +198,67 @@
                 type: Request.kGetRoomList
             }
             websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
         }
 
         function on_get_room_list(msg) {
+            if (msg.rooms == null) {
+                msg.rooms = []; // bad
+            }
             app.rooms = msg.rooms;
         }
+
+        // -------------boardcast--------------
+
+        function on_create_room_boardcast(msg) {
+            app.rooms.push(
+                {roomId: msg.roomId, userNum: 1, ownerId: msg.ownerId}
+            );
+        }
+
+        // ------------------------------------
+
+
+
+        const local_audio_server_url = "ws:127.0.0.1:9007";
+        var local_websocket = new WebSocket(local_audio_server_url);
+        local_websocket.onopen = () => {
+            console.log("local_websocket open");
+        };
+
+        function create_room() {
+            const req = {
+                type: Request.kCreateRoom,
+            }
+            websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
+        }
+
+        function on_create_room(msg) {
+            const req = {
+                type: Request.kJoinRoom,
+                roomId: msg.roomId,
+            }
+            global_values.g_roomId = msg.roomId;
+            websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
+        }
+
+        function on_join_room(msg) {
+            if (msg.result == false) {
+                console.log("join_room failed: " + msg.msg);
+                return;
+            }
+            ///*QString user_name, int room_id) */
+            const req = {
+                type: "JoinRoom",
+                user_name: global_values.g_username,
+                room_id: global_values.g_roomId,
+            }
+            local_websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
+        }
+
     </script>
 
 </body>
