@@ -1,3 +1,19 @@
+/*************login_view*************/
+#login_view{
+    border: 1px solid red;
+    border-radius: 15px;
+    margin: 50px;
+    padding: 10px;
+}
+
+#login_view > input{
+    display:list-item;
+    width: 80%;
+    margin: 10px 50px;
+}
+
+
+/*************main_view*************/
 /* 房间列表 */
 #main_view>ul {
     padding: 0;
@@ -9,7 +25,6 @@
     list-style: none;
     margin: 10px;
     padding: 15px;
-    border: 1px solid red;
     border-radius: 15px;
 }
 

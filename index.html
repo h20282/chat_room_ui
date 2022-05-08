@@ -10,8 +10,8 @@
 
 <body>
     <div id="login_view">
-        <input id="username" type="text" />
-        <input id="password" type="text" />
+        <input id="username" type="text" placeholder="username" />
+        <input id="password" type="text" placeholder="password" />
         <input id="login" type="button" onclick="login()" value="登录" />
     </div>
 
@@ -20,7 +20,6 @@
     </div>
 
     <div id="main_view">
-        <button onclick="create_room()">创建房间</button>
         <ul>
             <li v-for="room in rooms">
                 <div class="room-item">
@@ -31,6 +30,7 @@
                 </div>
             </li>
         </ul>
+        <button onclick="create_room()">创建房间</button>
     </div>
 
     <div id="room_view">
