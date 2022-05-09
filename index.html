@@ -34,6 +34,19 @@
     </div>
 
     <div id="room_view">
+        <ul>
+            <li>
+                <div class="avatar">123456789</div>
+                <meter value="0.5"></meter >
+                <input type="range" onchange="alert(this.value)"/><br>
+            </li>
+        </ul>
+        <select>
+            <option>fda</option>
+            <option>fda</option>
+            <option>fda</option>
+        </select>
+        <button>退出房间</button>
     </div>
 
     <script>
@@ -86,15 +99,15 @@
 
             for (var key in View) {
                 el = document.getElementById(View[key]);
-                //el.hidden = true;
+                el.hidden = true;
             }
             el = document.getElementById(view);
             el.hidden = false;
         }
 
-        set_showing_view(View.kLogin);
+        // set_showing_view(View.kRoom);
 
-        var app = new Vue({
+        var main_view_app = new Vue({
             el: '#main_view',
             data: {
                 rooms: [
@@ -104,7 +117,7 @@
             }
         })
 
-        const url = "ws://127.0.0.1:9001";
+        const url = "ws://119.91.116.26:9001";
         var websocket = new WebSocket(url);
 
         websocket.onopen = () => {
@@ -207,13 +220,13 @@
             if (msg.rooms == null) {
                 msg.rooms = []; // bad
             }
-            app.rooms = msg.rooms;
+            main_view_app.rooms = msg.rooms;
         }
 
         // -------------boardcast--------------
 
         function on_create_room_boardcast(msg) {
-            app.rooms.push(
+            main_view_app.rooms.push(
                 {roomId: msg.roomId, userNum: 1, ownerId: msg.ownerId}
             );
         }
