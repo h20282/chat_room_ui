@@ -1,0 +1,39 @@
+<html>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <title>多人在线语言聊天室</title>
+    <link rel="stylesheet" href="stype.css">
+</head>
+<body>
+    <div id="a">
+        <li v-for="l in list">{{l}}</li>
+
+        <li v-for="[key, value] in m">{{key}}==>>{{value.value}}</li>
+    </div>
+    <button onclick="f()">click</button>
+    <progress value="50.1" max="100" aria-hidden="true" style="background: red;">fda</progress>
+
+    <script>
+        app = new Vue(
+            {
+                el: '#a',
+                data: {
+                    list : [1,2,3],
+                    m: new Map([
+                        ['hello', {value: 'world'}]
+                    ])
+                }
+            }
+        );
+        function f(){
+            app.list.push(app.list.length);
+            for (var i=0; i<100; ++i){
+                app.m.set(app.list.length+i, {value: app.list.length+i});
+            }
+            console.trace('fda');
+        }
+    </script>
+</body>

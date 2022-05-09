@@ -35,18 +35,23 @@
 
     <div id="room_view">
         <ul>
-            <li>
-                <div class="avatar">123456789</div>
-                <meter value="0.5"></meter >
-                <input type="range" onchange="alert(this.value)"/><br>
+            <li v-for="[username, property ] in users">
+                <div class="avatar">{{username}}</div>
+                <meter v-bind:value="property"></meter>
+                <input type="range" v-bind:id="username" onchange="set_user_volume(this.id, this.value)" min="0"
+                    max="200" /><br>
             </li>
         </ul>
-        <select>
-            <option>fda</option>
-            <option>fda</option>
-            <option>fda</option>
-        </select>
-        <button>退出房间</button>
+        <div>
+            <button onclick="get_input_devices()">刷新</button>
+            <select onchange="change_input_device(this.value)">
+                <option v-for="audio_device in audio_devices">{{audio_device}}</option>
+            </select>
+            <progress id="collecter" v-bind:disabled="is_muted" max="1" value="0.5"
+                v-bind:style="is_muted?'background:red':''"></progress>
+            <button onclick="toggle_mute()">{{is_muted?"解除静音":"静音"}}</button>
+            <button>退出房间</button>
+        </div>
     </div>
 
     <script>
@@ -105,16 +110,34 @@
             el.hidden = false;
         }
 
-        // set_showing_view(View.kRoom);
+        set_showing_view(View.kLogin);
 
         var main_view_app = new Vue({
             el: '#main_view',
             data: {
                 rooms: [
-                    {roomId: 123456, userNum: 4, ownerId: "ys"},
-                    {roomId: 456789, userNum: 3, ownerId: "gzh"}
+                    //{roomId: 123456, userNum: 4, ownerId: "ys"},
+                    //{roomId: 456789, userNum: 3, ownerId: "gzh"}
                 ]
             }
+        })
+        var room_view_app = new Vue({
+            el: '#room_view',
+            data: {
+                users: new Map(),
+                audio_devices: ["麦克风", "耳机"],
+                is_muted: false,
+            },
+            watch: {
+                users: function (val) {
+                    alert(val);
+                },
+            },
+            created: function () {
+                //this.users.set('gzh', 0.6);
+                //this.users.set('ys', 0.7);
+                //this.users.set('fda', 0.8);
+            },
         })
 
         const url = "ws://119.91.116.26:9001";
@@ -122,6 +145,9 @@
 
         websocket.onopen = () => {
             console.log("open");
+        }
+        websocket.onerror = () => {
+            alert("websocket error");
         }
 
         const handlers = new Map([
@@ -144,7 +170,7 @@
         ]);
 
         websocket.onmessage = (evt) => {
-            console.log(evt);
+            console.info("chat_room_server.reply: " + evt.data);
 
             const msg = JSON.parse(evt.data);
 
@@ -169,8 +195,8 @@
         function on_mute_boardcast(msg) { }
 
         function login() {
-            var username = document.getElementById("username").value;
-            var password = document.getElementById("password").value;
+            var username = document.getElementById("username").value.trim();
+            var password = document.getElementById("password").value.trim();
             global_values.g_username = username;
             const req = {
                 type: Request.kLogin,
@@ -233,6 +259,29 @@
 
         // ------------------------------------
 
+        function on_SigCollectorVolumeReady(msg) {
+            document.getElementById("collecter").value = msg.volume;
+        }
+
+        function on_SigUserVolumeReady(msg) {
+            room_view_app.users.set(msg.name, msg.volume);
+            room_view_app.users = room_view_app.users;
+
+            //删掉下面两行会导致ui不更新的bug
+            room_view_app.is_muted = !room_view_app.is_muted;
+            room_view_app.is_muted = !room_view_app.is_muted;
+        }
+
+        function on_ret_GetInputDevices(msg) {
+            room_view_app.audio_devices = msg.ret;
+        }
+
+        const local_handlers = new Map([
+            ["SigCollectorVolumeReady", on_SigCollectorVolumeReady],
+            ["SigUserVolumeReady", on_SigUserVolumeReady],
+            ["ret.GetInputDevices", on_ret_GetInputDevices],
+        ]);
+
 
 
         const local_audio_server_url = "ws:127.0.0.1:9007";
@@ -240,6 +289,16 @@
         local_websocket.onopen = () => {
             console.log("local_websocket open");
         };
+        local_websocket.onerror = () => {
+            alert("local_websocket error");
+        }
+        local_websocket.onmessage = (evt) => {
+            console.debug(evt.data);
+
+            const msg = JSON.parse(evt.data);
+
+            local_handlers.get(msg.type)(msg);
+        }
 
         function create_room() {
             const req = {
@@ -259,6 +318,11 @@
             console.log(JSON.stringify(req));
         }
 
+        function get_input_devices() {
+            //GetInputDevices -> arr ret
+            local_websocket.send(JSON.stringify({type: "GetInputDevices"}));
+        }
+
         function on_join_room(msg) {
             if (msg.result == false) {
                 console.log("join_room failed: " + msg.msg);
@@ -272,6 +336,28 @@
             }
             local_websocket.send(JSON.stringify(req));
             console.log(JSON.stringify(req));
+
+            get_input_devices();
+            set_showing_view(View.kRoom);
+        }
+
+        function set_user_volume(username, volume) {
+            const req = {
+                type: "SetUserVolume",
+                name: username,
+                volume: volume
+            }
+            local_websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
+        }
+
+        function toggle_mute() {
+            room_view_app.is_muted = !room_view_app.is_muted;
+            local_websocket.send(JSON.stringify({type: "SetMuted", is_muted: room_view_app.is_muted}))
+        }
+
+        function change_input_device(device_name) {
+            local_websocket.send(JSON.stringify({type: "SetInputDevice", device_name: device_name}));
         }
 
     </script>
