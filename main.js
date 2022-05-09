@@ -1,8 +1,9 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const {Menu, app, BrowserWindow} = require('electron')
 const path = require('path')
 
 function createWindow () {
+  Menu.setApplicationMenu(null)
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
