@@ -9,19 +9,25 @@
 </head>
 
 <body>
+
+    <!------------------------- regist_view ------------------------->
     <div id="login_view">
         <input id="username" type="text" placeholder="username" />
         <input id="password" type="password" placeholder="password" />
-        <input id="login" type="button" onclick="login()" value="登录" />
-        <input type="button" onclick="set_showing_view(View.kRegister)" value="注册"></input>
+        <input id="login" type="button" onclick="login()" value="连接服务器中。。。" disabled="true" />
+        <input id="regist" type="button" onclick="set_showing_view(View.kRegister)" value="连接服务器中。。。" disabled="true"></input>
     </div>
 
+
+    <!------------------------- regist_view ------------------------->
     <div id="regist_view">
         <input id="regist_username" type="text" placeholder="username" />
         <input id="regist_password" type="password" placeholder="password" />
         <input id="regist_login" type="button" onclick="regist()" value="注册" />
     </div>
 
+    
+    <!------------------------- main_view ------------------------->
     <div id="main_view">
         <button onclick="get_room_list()">刷新</button>
         <div>
@@ -40,6 +46,8 @@
         <button onclick="create_room()">创建房间</button>
     </div>
 
+
+    <!------------------------- room_view ------------------------->
     <div id="room_view">
         <ul>
             <li v-for="[username, property ] in users">
@@ -59,7 +67,17 @@
             <button onclick="toggle_mute()">{{is_muted?"解除静音":"静音"}}</button>
             <button>退出房间</button>
         </div>
+        <div id="msg_board">
+            <div id="msg_list">
+                <li v-for="msg in msgs">
+                    {{msg.user}} : {{msg.msg}}
+                </li>
+            </div>
+            <input type="text" id="msg_to_send"/>
+            <button onclick="send_msg()">发送</button>
+        </div>
     </div>
+
 
     <script src="node_modules\blueimp-md5\js\md5.js"></script>
     <script>
@@ -73,8 +91,9 @@
             kChangeOwner: "request.changeOwner",
             kKickUser: "request.kickUser",
             kMute: "request.mute",
+            kSendMsg: "request.sendMsg"
         }
-
+        
         const Reply = {
             kRegist: "reply.regist",
             kLogin: "reply.login",
@@ -86,7 +105,7 @@
             kKickUser: "reply.kickUser",
             kMute: "reply.mute",
         }
-
+        
         const Boardcast = {
             kCreateRoom: "boardcast.createRoom",
             kLeaveRoom: "boardcast.leaveRoom",
@@ -94,6 +113,7 @@
             kChangeOwner: "boardcast.changeOwner",
             kKickUser: "boardcast.kickUser",
             kMute: "boardcast.mute",
+            kSendMsg: "boardcast.sendMsg"
         }
 
         const View = {
@@ -136,6 +156,10 @@
                 users: new Map(),
                 audio_devices: ["麦克风", "耳机"],
                 is_muted: false,
+                msgs : [
+                    {user: "gzh", msg: "hello"},
+                    {user: "gzh", msg: "hello"},
+                ]
             },
             watch: {
                 users: function (val) {
@@ -152,7 +176,17 @@
         const url = "ws://119.91.116.26:9001";
         var websocket = new WebSocket(url);
 
+        function set_connected() {
+            document.getElementById("login").value = "登录";
+            document.getElementById("login").disabled = false;
+            document.getElementById("regist").value = "注册";
+            document.getElementById("regist").disabled = false;
+        }
+
         websocket.onopen = () => {
+            if (local_websocket.readyState == websocket.OPEN) {
+                set_connected();
+            }
             console.log("open");
         }
         websocket.onerror = () => {
@@ -176,6 +210,7 @@
             [Boardcast.kChangeOwner, on_change_owner_boardcast],
             [Boardcast.kKickUser, on_kick_user_boardcast],
             [Boardcast.kMute, on_mute_boardcast],
+            [Boardcast.kSendMsg, on_send_msg_boardcast],
         ]);
 
         websocket.onmessage = (evt) => {
@@ -267,6 +302,15 @@
             }
         }
 
+        function send_msg() {
+            var text = document.getElementById("msg_to_send").value;
+            const req = {
+                type: Request.kSendMsg,
+                text: text
+            };
+            websocket.send(JSON.stringify(req));
+        }
+
         function join_room(room_id) {
             alert(room_id);
             const req = {
@@ -318,6 +362,10 @@
             room_view_app.is_muted = !room_view_app.is_muted;
         }
 
+        function on_send_msg_boardcast(msg){
+            room_view_app.msgs.push({user: msg.user, msg: msg.msg});
+        }
+
         // ------------------------------------
 
         function on_SigCollectorVolumeReady(msg) {
@@ -347,6 +395,9 @@
         const local_audio_server_url = "ws:127.0.0.1:9007";
         var local_websocket = new WebSocket(local_audio_server_url);
         local_websocket.onopen = () => {
+            if (websocket.readyState == websocket.OPEN) {
+                set_connected();
+            }
             console.log("local_websocket open");
         };
         local_websocket.onerror = () => {

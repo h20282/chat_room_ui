@@ -137,3 +137,11 @@ meter::-webkit-meter-optimum-value {
     border-radius: 5px;
     border: black solid 1px;
 }
+
+#msg_board{
+    margin: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    border: black solid 1px;
+
+}
