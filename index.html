@@ -15,7 +15,8 @@
         <input id="username" type="text" placeholder="username" />
         <input id="password" type="password" placeholder="password" />
         <input id="login" type="button" onclick="login()" value="连接服务器中。。。" disabled="true" />
-        <input id="regist" type="button" onclick="set_showing_view(View.kRegister)" value="连接服务器中。。。" disabled="true"></input>
+        <input id="regist" type="button" onclick="set_showing_view(View.kRegister)" value="连接服务器中。。。"
+            disabled="true"></input>
     </div>
 
 
@@ -26,7 +27,7 @@
         <input id="regist_login" type="button" onclick="regist()" value="注册" />
     </div>
 
-    
+
     <!------------------------- main_view ------------------------->
     <div id="main_view">
         <button onclick="get_room_list()">刷新</button>
@@ -73,7 +74,7 @@
                     {{msg.user}} : {{msg.msg}}
                 </li>
             </div>
-            <input type="text" id="msg_to_send"/>
+            <input type="text" id="msg_to_send" />
             <button onclick="send_msg()">发送</button>
         </div>
     </div>
@@ -93,7 +94,7 @@
             kMute: "request.mute",
             kSendMsg: "request.sendMsg"
         }
-        
+
         const Reply = {
             kRegist: "reply.regist",
             kLogin: "reply.login",
@@ -105,7 +106,7 @@
             kKickUser: "reply.kickUser",
             kMute: "reply.mute",
         }
-        
+
         const Boardcast = {
             kCreateRoom: "boardcast.createRoom",
             kLeaveRoom: "boardcast.leaveRoom",
@@ -156,10 +157,7 @@
                 users: new Map(),
                 audio_devices: ["麦克风", "耳机"],
                 is_muted: false,
-                msgs : [
-                    {user: "gzh", msg: "hello"},
-                    {user: "gzh", msg: "hello"},
-                ]
+                msgs: []
             },
             watch: {
                 users: function (val) {
@@ -173,8 +171,8 @@
             },
         })
 
-        const url = "ws://119.91.116.26:9001";
-        var websocket = new WebSocket(url);
+        const server_url = "ws://119.91.116.26:9001";
+        var websocket = new WebSocket(server_url);
 
         function set_connected() {
             document.getElementById("login").value = "登录";
@@ -190,7 +188,7 @@
             console.log("open");
         }
         websocket.onerror = () => {
-            alert("websocket error");
+            alert("websocket error: 连接服务器" + server_url + "失败");
         }
 
         const handlers = new Map([
@@ -362,7 +360,7 @@
             room_view_app.is_muted = !room_view_app.is_muted;
         }
 
-        function on_send_msg_boardcast(msg){
+        function on_send_msg_boardcast(msg) {
             room_view_app.msgs.push({user: msg.user, msg: msg.msg});
         }
 
@@ -401,7 +399,7 @@
             console.log("local_websocket open");
         };
         local_websocket.onerror = () => {
-            alert("local_websocket error");
+            alert("local_websocket error: 请打开本地的“音频服务”（example.exe）");
         }
         local_websocket.onmessage = (evt) => {
             console.debug(evt.data);
