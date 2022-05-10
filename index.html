@@ -24,6 +24,9 @@
 
     <div id="main_view">
         <button onclick="get_room_list()">刷新</button>
+        <div>
+            房间数：{{rooms.length}}
+        </div>
         <ul>
             <li v-for="room in rooms">
                 <div class="room-item">
@@ -46,7 +49,7 @@
                     max="200" /><br>
             </li>
         </ul>
-        <div>
+        <div class="control">
             <button onclick="get_input_devices()">刷新</button>
             <select onchange="change_input_device(this.value)">
                 <option v-for="audio_device in audio_devices">{{audio_device}}</option>

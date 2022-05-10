@@ -3,16 +3,15 @@ li {
     list-style: none;
 }
 
-
-/*************login_view*************/
-#login_view {
+/******login_view, regist_view******/
+#login_view, #regist_view {
     border: 1px solid black;
     border-radius: 15px;
     margin: 50px;
     padding: 10px;
 }
 
-#login_view>input {
+#login_view>input, #regist_view>input {
     display: list-item;
     width: 80%;
     margin: 10px 50px;
@@ -48,6 +47,12 @@ li {
     padding: 10px;
     border: 1px solid black;
     width: 20%;
+}
+
+#main_view>ul{
+    min-height: 50px;
+    border: 1px solid;
+    border-radius: 9px;
 }
 
 /* 列表项中的每一列（不包括“加入”按钮） */
@@ -126,7 +131,7 @@ meter::-webkit-meter-optimum-value {
     /* background: red; */
 }
 
-#room_view > div{
+.control{
     margin: 15px;
     padding: 10px;
     border-radius: 5px;
