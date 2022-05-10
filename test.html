@@ -8,13 +8,32 @@
     <link rel="stylesheet" href="stype.css">
 </head>
 <body>
-    <div id="a">
-        <li v-for="l in list">{{l}}</li>
-
-        <li v-for="[key, value] in m">{{key}}==>>{{value.value}}</li>
+    <style>
+        .test{
+            margin: 10px;
+            padding: 10px;
+            border: red solid 1px;
+        }
+    </style>
+    <div class="test">
+        <div id="a">
+            <li v-for="l in list">{{l}}</li>
+    
+            <li v-for="[key, value] in m">{{key}}==>>{{value.value}}</li>
+        </div>
+        <button onclick="f()">click</button>
+        <progress value="50.1" max="100" aria-hidden="true" style="background: red;">fda</progress>
     </div>
-    <button onclick="f()">click</button>
-    <progress value="50.1" max="100" aria-hidden="true" style="background: red;">fda</progress>
+
+
+    <div class="msg">
+        <div class="audio_chat">
+            <h1>AudioChat</h1>
+            <ul>
+                <li></li>
+            </ul>
+        </div>
+    </div>
 
     <script>
         app = new Vue(
