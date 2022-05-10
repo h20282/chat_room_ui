@@ -71,7 +71,7 @@
         <div id="msg_board">
             <div id="msg_list">
                 <li v-for="msg in msgs">
-                    {{msg.user}} : {{msg.msg}}
+                    {{msg.user}} : {{msg.text}}
                 </li>
             </div>
             <input type="text" id="msg_to_send" />
@@ -361,7 +361,7 @@
         }
 
         function on_send_msg_boardcast(msg) {
-            room_view_app.msgs.push({user: msg.user, msg: msg.msg});
+            room_view_app.msgs.push({user: msg.user, text: msg.text});
         }
 
         // ------------------------------------
