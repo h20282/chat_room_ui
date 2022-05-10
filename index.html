@@ -11,15 +11,19 @@
 <body>
     <div id="login_view">
         <input id="username" type="text" placeholder="username" />
-        <input id="password" type="text" placeholder="password" />
+        <input id="password" type="password" placeholder="password" />
         <input id="login" type="button" onclick="login()" value="登录" />
+        <input type="button" onclick="set_showing_view(View.kRegister)" value="注册"></input>
     </div>
 
     <div id="regist_view">
-
+        <input id="regist_username" type="text" placeholder="username" />
+        <input id="regist_password" type="password" placeholder="password" />
+        <input id="regist_login" type="button" onclick="regist()" value="注册" />
     </div>
 
     <div id="main_view">
+        <button onclick="get_room_list()">刷新</button>
         <ul>
             <li v-for="room in rooms">
                 <div class="room-item">
@@ -54,6 +58,7 @@
         </div>
     </div>
 
+    <script src="node_modules\blueimp-md5\js\md5.js"></script>
     <script>
         const Request = {
             kRegist: "request.regist",
@@ -97,7 +102,8 @@
 
         global_values = {
             g_username: null,
-            g_roomId: null
+            g_roomId: null,
+            g_salt: 'this is a salt'
         }
 
         function set_showing_view(view) {
@@ -177,6 +183,7 @@
             handlers.get(msg.type)(msg);
         }
 
+        // function pre def: for no error
         function on_regist(msg) { }
         function on_login(msg) { }
         function on_create_room(msg) { }
@@ -197,6 +204,21 @@
         function login() {
             var username = document.getElementById("username").value.trim();
             var password = document.getElementById("password").value.trim();
+
+            function len_check(s, min_len, max_len) {
+                return s.length <= max_len && s.length >= min_len;
+            }
+
+            if (!len_check(username, 3, 10)) {
+                alert("username length must in range [3,10]");
+                return;
+            }
+            if (!len_check(password, 6, 16)) {
+                alert("password length must in range [3,16]");
+                return;
+            }
+
+            password = md5(password + global_values.g_salt);
             global_values.g_username = username;
             const req = {
                 type: Request.kLogin,
@@ -211,9 +233,35 @@
             if (msg.result) {
                 set_showing_view(View.kMain);
             } else {
-                console.log(msg.msg);
+                alert(msg.msg);
             }
             get_room_list();
+        }
+
+        function regist() {
+            var username = document.getElementById("regist_username").value.trim();
+            var password = document.getElementById("regist_password").value.trim();
+            console.log(md5(password)); // 未加盐 不安全
+            password = md5(password + global_values.g_salt);
+            console.log(password); // 加盐 安全
+            global_values.g_username = username;
+            const req = {
+                type: Request.kRegist,
+                userName: username,
+                password: password
+            }
+            websocket.send(JSON.stringify(req));
+            console.log(JSON.stringify(req));
+        }
+
+        function on_regist(msg) {
+            if (msg.result) {
+                document.getElementById("username").value = document.getElementById("regist_username").value;
+                document.getElementById("password").value = document.getElementById("regist_password").value;
+                set_showing_view(View.kLogin);
+            } else {
+                alert(msg.msg);
+            }
         }
 
         function join_room(room_id) {
@@ -255,6 +303,16 @@
             main_view_app.rooms.push(
                 {roomId: msg.roomId, userNum: 1, ownerId: msg.ownerId}
             );
+            //删掉下面两行会导致ui不更新的bug
+            room_view_app.is_muted = !room_view_app.is_muted;
+            room_view_app.is_muted = !room_view_app.is_muted;
+        }
+
+        function on_leave_room_boardcast(msg) {
+            room_view_app.users.delete(msg.userId);
+            //删掉下面两行会导致ui不更新的bug
+            room_view_app.is_muted = !room_view_app.is_muted;
+            room_view_app.is_muted = !room_view_app.is_muted;
         }
 
         // ------------------------------------
@@ -265,7 +323,6 @@
 
         function on_SigUserVolumeReady(msg) {
             room_view_app.users.set(msg.name, msg.volume);
-            room_view_app.users = room_view_app.users;
 
             //删掉下面两行会导致ui不更新的bug
             room_view_app.is_muted = !room_view_app.is_muted;
