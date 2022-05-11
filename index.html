@@ -67,7 +67,7 @@
             <progress id="collecter" v-bind:disabled="is_muted" max="1" value="0.5"
                 v-bind:style="is_muted?'background:red':''"></progress>
             <button onclick="toggle_mute()">{{is_muted?"解除静音":"静音"}}</button>
-            <button>退出房间</button>
+            <button onclick="leave_room()">退出房间</button>
         </div>
         <div id="msg_board">
             <div id="msg_list">
@@ -339,6 +339,24 @@
         function on_join_room(msg) {
             if (msg.result) {
 
+            } else {
+                alert(msg.msg);
+            }
+        }
+
+        function leave_room() {
+            const req = {
+                type: Request.kLeaveRoom,
+            }
+            websocket.send(JSON.stringify(req));
+        }
+
+        function on_leave_room(msg) {
+            if (msg.result) {
+                local_websocket.send(JSON.stringify({type: "LeaveRoom"}));
+                set_showing_view(View.kMain);
+                room_view_app.users.clear();
+                get_room_list();
             } else {
                 alert(msg.msg);
             }
