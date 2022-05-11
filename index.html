@@ -245,13 +245,13 @@
         function on_kick_user_boardcast(msg) { }
         function on_mute_boardcast(msg) { }
 
+        function len_check(s, min_len, max_len) {
+            return s.length <= max_len && s.length >= min_len;
+        }
+
         function login() {
             var username = document.getElementById("username").value.trim();
             var password = document.getElementById("password").value.trim();
-
-            function len_check(s, min_len, max_len) {
-                return s.length <= max_len && s.length >= min_len;
-            }
 
             if (!len_check(username, 3, 10)) {
                 alert("username length must in range [3,10]");
@@ -285,6 +285,16 @@
         function regist() {
             var username = document.getElementById("regist_username").value.trim();
             var password = document.getElementById("regist_password").value.trim();
+
+            if (!len_check(username, 3, 10)) {
+                alert("username length must in range [3,10]");
+                return;
+            }
+            if (!len_check(password, 6, 16)) {
+                alert("password length must in range [3,16]");
+                return;
+            }
+
             console.log(md5(password)); // 未加盐 不安全
             password = md5(password + global_values.g_salt);
             console.log(password); // 加盐 安全
