@@ -52,6 +52,7 @@
     <div id="room_view">
         <ul>
             <li v-for="[username, property ] in users">
+                <div v-bind:hidden="owner!=username">房主</div>
                 <div class="avatar">{{username}}</div>
                 <meter v-bind:value="property"></meter>
                 <input type="range" v-bind:id="username" onchange="set_user_volume(this.id, this.value)" min="0"
@@ -74,7 +75,7 @@
                     {{msg.user}} : {{msg.text}}
                 </li>
             </div>
-            <input type="text" id="msg_to_send" />
+            <input type="text" id="msg_to_send" v-on:keyup.13="send_msg()" />
             <button onclick="send_msg()">发送</button>
         </div>
     </div>
@@ -157,7 +158,13 @@
                 users: new Map(),
                 audio_devices: ["麦克风", "耳机"],
                 is_muted: false,
-                msgs: []
+                msgs: [],
+                owner: "gzh",
+            },
+            methods: {
+                send_msg() {
+                    send_msg();
+                }
             },
             watch: {
                 users: function (val) {
@@ -302,6 +309,7 @@
 
         function send_msg() {
             var text = document.getElementById("msg_to_send").value;
+            document.getElementById("msg_to_send").value = '';
             const req = {
                 type: Request.kSendMsg,
                 text: text
@@ -310,7 +318,7 @@
         }
 
         function join_room(room_id) {
-            alert(room_id);
+            //alert(room_id);
             const req = {
                 type: Request.kJoinRoom,
                 roomId: room_id,
@@ -318,12 +326,21 @@
             websocket.send(JSON.stringify(req));
             console.log(JSON.stringify(req));
             global_values.g_roomId = room_id;
+            console.log('here');
+            for (var i in main_view_app.rooms) {
+                const room = main_view_app.rooms[i];
+                if (room.roomId == room_id) {
+                    room_view_app.owner = room.ownerId;
+                }
+            }
 
         }
 
         function on_join_room(msg) {
             if (msg.result) {
 
+            } else {
+                alert(msg.msg);
             }
         }
 
@@ -415,6 +432,7 @@
             }
             websocket.send(JSON.stringify(req));
             console.log(JSON.stringify(req));
+            room_view_app.owner = global_values.g_username;
         }
 
         function on_create_room(msg) {
