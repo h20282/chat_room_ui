@@ -336,14 +336,6 @@
 
         }
 
-        function on_join_room(msg) {
-            if (msg.result) {
-
-            } else {
-                alert(msg.msg);
-            }
-        }
-
         function leave_room() {
             const req = {
                 type: Request.kLeaveRoom,
